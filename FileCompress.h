@@ -113,10 +113,87 @@ public:
 		{
 			_info[(unsigned char)ch]._count++;
 		}
+		//构建哈夫曼树
+		CharInfo invalid(0);
+		HuffmanTree<CharInfo> tree(_info, 256, invalid);
+		//生成哈夫曼编码
+		string code;
+		GenerateHuffmanCode(tree.GetRootNode(), code);
+		//文件压缩
+		string CompressFilename = filename;
+		CompressFilename += ".compress";
+		FILE* fin = fopen(CompressFilename.c_str(), "wb"); //二进制写文件
+		fseek(fout, 0, SEEK_SET);    //定义到文件起始位置
+		ch = fgetc(fout);
+		char value = 0;
+		int size = 0;
+		while (ch != EOF)
+		{
+			string &code = _info[(unsigned char)ch]._code;
+			for (rsize_t i = 0; i < code.size(); ++i)
+			{
+				if (code[i] = '1')
+				{
+					value |= 1;
+				}
+				value <<= 1;
+				++size;
+				if (size == 8)   //满8位将哈夫曼编码写入对应的文件
+				{
+					fputc(value, fin);
+					value = 0;
+					size = 0;
+				}
+			}
+			ch = fgetc(fout);//读取下一个字符的哈夫曼编码
+			if (size > 0)    //表示还有位，补0
+			{
+				value << (8 - size);
+				fputc(value, fin);
+			}
+			//写配置文件,方便压缩的时候重建哈夫曼树
+			string configFile = filename;
+			configFile += ".config";
+			FILE* finconfig = fopen(configFile.c_str, "wb");
+			assert(finconfig);
+			char buffer[128];
+			string line;
+			for (int i = 0; i < 256; ++i)
+			{
+				if (_info[i]._count>0)
+				{
+					line += _info[i]._ch;
+					line += ",";
+					itoa(_info[i]._count, buffer, 10);
+					line += buffer;
+					line += '\n';
+					fput(line.c_str(), finconfig);
+					line.clear();
+				}
+			}
+			fclose(fout);
+			fclose(fin);
+			fclose(finconfig);
+		}
+	}
+protected:
+	void GenerateHuffmanCode(HuffmanTreeNode<CharInfo>* root, string code)
+	{
+		if (root == NULL)
+		{
+			return;
+		}
+		if (root->_left == NULL&&root->_right == NULL)
+		{
+			_info[root->_weight._ch]._code = code;
+		}
+		GenerateHuffmanCode(root->_left, code + '0');
+		GenerateHuffmanCode(root->_left, code + '1');
 	}
 protected:
 	CharInfo _info[256];
 };
+
 void Huffmantest()
 {
 	int a[] = { 1, 3, 5, 2, 4, 6 };
