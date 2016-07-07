@@ -31,8 +31,7 @@ class Heap
 public:
 	Heap()
 	{}
-
-	Heap(const T* a, size_t size)
+	Heap(const T * &a, size_t size)
 	{
 		assert(a);
 		for (size_t i = 0; i < size; ++i)
@@ -66,7 +65,6 @@ public:
 	}
 	T & Top()
 	{
-		assert(!_a.empty());
 		return _a[0];
 	}
 	size_t Size()
