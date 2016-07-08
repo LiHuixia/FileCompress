@@ -35,7 +35,7 @@ public:
 		//选出最小两个出来
 		struct NodeCompare
 		{
-			bool operator()(const Node *r, const Node *l)
+			bool operator()(const Node *l, const Node *r)
 			{
 				return (l->_weight < r->_weight);
 			}
@@ -84,7 +84,7 @@ struct CharInfo
 	unsigned char _ch;
 	LongType _count; //字符出现的次数
 	string _code;//对应的哈夫曼编码
-	CharInfo(LongType count = 0)
+	CharInfo(LongType count=0)
 		:_count(count)
 		, _ch(0)
 	{}
@@ -252,12 +252,18 @@ protected:
 		{
 			return;
 		}
+		if (root->_left)
+		{
+			GenerateHuffmanCode(root->_left, code + '0');
+		}
+		if (root->_right)
+		{
+			GenerateHuffmanCode(root->_right, code + '1');
+		}
 		if (root->_left == NULL&&root->_right == NULL)
 		{
 			_info[root->_weight._ch]._code = code;
 		}
-		GenerateHuffmanCode(root->_left, code + '0');
-		GenerateHuffmanCode(root->_right, code + '1');
 	}
 
 	bool Readline(FILE* &fout, string& str)
